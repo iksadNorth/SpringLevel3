@@ -7,6 +7,7 @@ import com.sparta.springlevel3.entity.UserRoleEnum;
 import com.sparta.springlevel3.jwt.JwtUtil;
 import com.sparta.springlevel3.repository.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -151,7 +152,7 @@ public class UserService {
      * @param res client에게 토큰을 전달하기 위한 response 객체
      * @return 로그인이 완료된 경우 로그인 완료 메시지 및 Status Code 200 반환
      */
-    public String login(LoginDto requestDto, HttpServletResponse res) {
+    public ResponseEntity<String> login(LoginDto requestDto, HttpServletResponse res) {
         String username = requestDto.getUsername();
         String password = requestDto.getPassword();
 
@@ -164,14 +165,14 @@ public class UserService {
          * 존재하지 않는 ID인 경우
          */
         if (user == null) {
-            return "{\"message\": \"등록된 사용자가 없습니다\", \"statusCode\": 400}";
+            return ResponseEntity.badRequest().body("{\"message\": \"등록된 사용자가 없습니다\", \"statusCode\": 400}");
         }
 
         /**
          * 입력한 비밀번호와 DB에 저장된 비밀번호가 일치하는지 확인
          */
         if (!passwordEncoder.matches(password,user.getPassword()))
-            return "{\"message\": \"PW가 일치하지 않습니다.\", \"statusCode\": 400}";
+            return ResponseEntity.badRequest().body("{\"message\": \"PW가 일치하지 않습니다.\", \"statusCode\": 400}");
 
         /**
          * 토큰 생성 및 쿠키에 토큰 추가
@@ -182,7 +183,7 @@ public class UserService {
         /**
          * 로그인 완료 메시지 및 Status Code 200 반환
          */
-        return "{\"message\": \"로그인 성공\", \"statusCode\": 200}";
+        return ResponseEntity.ok(("{\"message\": \"로그인 성공\", \"statusCode\": 200}"));
     }
 
 }

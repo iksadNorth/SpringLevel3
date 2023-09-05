@@ -126,7 +126,12 @@ public class MemoService {
     @Transactional // updateMemo는 따로 Transactional 되어있지 않아 해줘야함
     public OnlyMemo updateMemo(Long id, MemoRequestDto requestDto, String username, UserRoleEnum role) {
 
-        Memo memo = findMemo(id);
+        Memo memo;
+        try {
+            memo = findMemo(id);
+        } catch (IllegalArgumentException e) {
+            return new OnlyMemo("400","선택한 메모는 존재하지 않습니다.");
+        }
 
         /**
          * 수정하려는 메모의 작성자와 수정하려는 유저가 같은 경우 혹은 관리자 권한을 가진 경우에만 메모 수정 가능
@@ -147,11 +152,16 @@ public class MemoService {
     }
 
     public ResponseEntity<String>  deleteMemo(Long id, String username, UserRoleEnum role) {
-        Memo memo = findMemo(id);
+        Memo memo;
+        try {
+            memo = findMemo(id);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("{\"msg\": \"삭제 실패\", \"statusCode\": 400}");
+        }
         if(role.getAuthority().equals("ROLE_ADMIN")|| memo.getUsername().equals(username))
             memoRepository.delete(memo);
         else
-            return ResponseEntity.ok("{\"msg\": \"삭제 실패\", \"statusCode\": 444}");
+            return ResponseEntity.badRequest().body("{\"msg\": \"삭제 실패\", \"statusCode\": 400}");
         return ResponseEntity.ok("{\"msg\": \"삭제 성공\", \"statusCode\": 200}");
 
     }
